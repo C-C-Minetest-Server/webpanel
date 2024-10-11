@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result['auth'] == true) {
                 $_SESSION['username'] = $username;
 
-                $redirect = isset($_POST['returnto']) ? $_POST['returnto'] : ($emoWebPanelRoot . "/");
+                $redirect = isset($_POST['returnto']) ? $_POST['returnto'] : $emoWebPanelRoot;
                 http_response_code(303); // See Other
                 header("Location: {$redirect}");
                 die();
