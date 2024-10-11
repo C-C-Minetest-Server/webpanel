@@ -1,0 +1,18 @@
+[Socket commection]
+
+# The address the socket is binding to
+webpanel.socket_bind_addr (Socket bind address) string *
+
+# The port the socket is binding to
+webpanel.socket_bind_port (Socket bind port) int 30300 1 65535
+
+# The secret to be provided in data.secret.
+webpanel.socket_secret (Socket secret) string
+
+# Time before timing out a client keep sending contents
+webpanel.socket_timeout (Socket timeout) float 2
+
+[Email]
+
+# Timeout of email verification, in seconds
+webpanel.email_confirm_timeout (Email confirm timeout) int 600
