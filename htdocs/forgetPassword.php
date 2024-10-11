@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $confirm_code = $result['confirm_code'];
             $email = $result['email'];
             $rootURL = getRootURL();
-            $verifyLink = "{$rootURL}/forgetPasswordConfirm.php?emailToken={$confirm_code}";
+            $verifyLink = "{$rootURL}forgetPasswordConfirm.php?emailToken={$confirm_code}";
             // Send the email
 
             try {

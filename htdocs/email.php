@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $confirm_code = $result['confirm_code'];
             $rootURL = getRootURL();
-            $verifyLink = "{$rootURL}/emailConfirm.php?emailToken={$confirm_code}";
+            $verifyLink = "{$rootURL}emailConfirm.php?emailToken={$confirm_code}";
             // Send the email
 
             try {
