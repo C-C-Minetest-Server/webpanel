@@ -1,14 +1,10 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 require_once __DIR__ . '/loadConfig.php';
 require_once __DIR__ . '/src/communicate.php';
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/util.php';
+require_once __DIR__ . '/src/mail.php';
 session_start();
 
 if (!isset($_SESSION['username'])) {
@@ -18,6 +14,7 @@ if (!isset($_SESSION['username'])) {
 }
 
 $errmsg = null;
+$sendmail = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['email'])) {
         $errmsg = 'Email not given';
@@ -36,44 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result['ok'] == false) {
             $errmsg = 'Start confirmation failed: ' . $result['err'];
         } else {
-            $confirm_code = $result['confirm_code'];
+            $confirm_code = rawurlencode($result['confirm_code']);
             $rootURL = getRootURL();
-            $verifyLink = "{$rootURL}emailConfirm.php?emailToken={$confirm_code}";
-            // Send the email
-
-            try {
-                $mail = new PHPMailer(true);
-
-                $mail->isSMTP();
-                $mail->Host       = $emoWebPanelSMTPHost;
-                $mail->SMTPAuth   = $emoWebPanelSMTPAuth;
-                $mail->Username   = $emoWebPanelSMTPUsername;
-                $mail->Password   = $emoWebPanelSMTPPassword;
-                $mail->SMTPSecure = $emoWebPanelSMTPSecure;
-                $mail->Port       = $emoWebPanelSMTPPort;
-
-                $mail->setFrom($emoWebPanelSMTPFrom, $emoWebPanelSMTPFromName);
-                $mail->addAddress($email, $username);
-
-                $mail->Subject = 'Email verification';
-                $mail->Body = <<<EOF
-                Dear {$username},
-
-                Click on the following link to verify your email:
-                
-                {$verifyLink}
-
-                This link will be valid for 10 minutes. If you haven't requested adding / changing your email, change your password as soon as possible.
-
-                Yours truly,
-                {$emoWebPanelSMTPFromName}
-                EOF;
-
-                $mail->send();
-            } catch (Exception $e) {
-                http_response_code(500);
-                $errmsg = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-            }
+            $verifyLink = "{$rootURL}/emailConfirm.php?emailToken={$confirm_code}";
+            $sendmail = true;
         }
     }
 }
@@ -94,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p>If you cannot find the email, check your spam folder.</p>
     <?php else : ?>
         <h1>Set email</h1>
-        <?php 
+        <?php
         $disp_username = htmlspecialchars($_SESSION['username']);
         echo "<p>Logged in as: {$disp_username}</p>";
         if ($errmsg != null) {
@@ -113,3 +76,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
+<?php
+session_write_close();
+fastcgi_finish_request();
+if ($sendmail === true) {
+    // Send the email
+
+    $mail = prepareMail();
+    $mail->addAddress($email, $username);
+
+    $mail->Subject = 'Email verification';
+    $mail->Body = <<<EOF
+        Dear {$username},
+
+        Click on the following link to verify your email:
+        
+        {$verifyLink}
+
+        This link will be valid for 10 minutes. If you haven't requested adding / changing your email, change your password as soon as possible.
+
+        Yours truly,
+        {$emoWebPanelSMTPFromName}
+        EOF;
+
+    $mail->send();
+}
+?>

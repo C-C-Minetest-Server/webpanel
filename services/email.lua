@@ -36,10 +36,9 @@ webpanel.register_service("email_get", function(id, cmd)
         }
     end
 
-    local key = "webpanel_emails:" .. username
     return {
         ok = true,
-        email = storage:get_string(key)
+        email = webpanel.get_user_email(username)
     }
 end)
 
@@ -90,12 +89,16 @@ webpanel.register_service("email_do_confirm", function(id, cmd)
         }
     end
 
-    local key = "webpanel_emails:" .. confirm_data.name
-    storage:set_string(key, confirm_data.email)
+    local username = confirm_data.name
+    local old_email = webpanel.get_user_email(username)
+    local new_email = confirm_data.email
+    webpanel.set_user_email(username, new_email)
     pending_confirms[confirm_code] = nil
-    logger:action("Set email of %s to %s with token %s", confirm_data.name, confirm_data.email, confirm_code)
+    logger:action("Set email of %s to %s with token %s", username, new_email, confirm_code)
     return {
-        ok = true
+        ok = true,
+        old_email = old_email,
+        new_email = new_email,
     }
 end)
 

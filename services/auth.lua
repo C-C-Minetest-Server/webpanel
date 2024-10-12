@@ -88,9 +88,13 @@ webpanel.register_service("auth_set_password", wrap_require_auth(function(id, cm
 
     local hash = minetest.get_password_hash(username, password)
     minetest.set_player_password(username, hash)
-    return {
+    local resp = {
         ok = true
     }
+    if cmd.get_email then
+        resp.email = webpanel.get_user_email(username)
+    end
+    return resp
 end))
 
 webpanel.register_service("auth_get_privs", wrap_require_auth(function(id, cmd)

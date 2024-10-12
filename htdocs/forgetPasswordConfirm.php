@@ -3,9 +3,12 @@
 require_once __DIR__ . '/loadConfig.php';
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/communicate.php';
+require_once __DIR__ . '/src/util.php';
+require_once __DIR__ . '/src/mail.php';
 session_start();
 
 $msg = null;
+$sendmail = false;
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (!isset($_GET['emailToken'])) {
         http_response_code(400); // Bad request
@@ -35,11 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'service_name' => 'auth_set_password',
             'username' => $username,
             'password' => $_POST['password'],
+            'get_email' => true,
         ));
         if ($result['ok'] == false) {
             $msg = 'Confirmation failed: ' . $result['err'];
         } else {
             $msg = 'Successfully set password.';
+        }
+        if (isset($result['email']) && $result['email'] !== '') {
+            $email = $result['email'];
+            $sendmail = true;
         }
     }
 } else {
@@ -62,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 <body>
     <?php if ($msg !== null) : ?>
         <p><?php echo htmlspecialchars($msg); ?></p>
+        <p><a href="<?php echo getRootURL() . '/'; ?>">Go back to main page</a></p>
     <?php else : ?>
         <h1>Reset password: <?php echo htmlspecialchars($_SESSION['reset_name']); ?></h1>
         <form method="post" id="passwordreset">
@@ -85,3 +94,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 </body>
 
 </html>
+<?php
+session_write_close();
+fastcgi_finish_request();
+if ($sendmail === true) {
+    // Send the email
+
+    $mail = prepareMail();
+    $mail->addAddress($email, $username);
+
+    $mail->Subject = 'Your password has been changed';
+    $mail->Body = <<<EOF
+        Dear {$username},
+
+        Someone have changed your password. If you haven't requested adding / changing your password, change your password as soon as possible.
+
+        Yours truly,
+        {$emoWebPanelSMTPFromName}
+        EOF;
+
+    $mail->send();
+}
+?>

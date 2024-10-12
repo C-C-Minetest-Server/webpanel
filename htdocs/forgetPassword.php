@@ -1,17 +1,14 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 require_once __DIR__ . '/loadConfig.php';
 require_once __DIR__ . '/src/communicate.php';
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/util.php';
+require_once __DIR__ . '/src/mail.php';
 session_start();
 
 $errmsg = null;
+$sendmail = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['name'])) {
         http_response_code(400);
@@ -27,53 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'username' => $username,
         ));
         if ($result['ok'] == false) {
-            if ($result['err'] === 'Missing email') {
-                // TODO: Better timing attack prevention
-                sleep(rand(4, 8));
-                usleep(rand(0, 1000000));
-            } else {
+            if ($result['err'] !== 'Missing email') {
                 $errmsg = 'Start confirmation failed: ' . $result['err'];
             }
         } else {
-            $confirm_code = $result['confirm_code'];
+            $confirm_code = rawurlencode($result['confirm_code']);
             $email = $result['email'];
             $rootURL = getRootURL();
-            $verifyLink = "{$rootURL}forgetPasswordConfirm.php?emailToken={$confirm_code}";
-            // Send the email
-
-            try {
-                $mail = new PHPMailer(true);
-
-                $mail->isSMTP();
-                $mail->Host       = $emoWebPanelSMTPHost;
-                $mail->SMTPAuth   = $emoWebPanelSMTPAuth;
-                $mail->Username   = $emoWebPanelSMTPUsername;
-                $mail->Password   = $emoWebPanelSMTPPassword;
-                $mail->SMTPSecure = $emoWebPanelSMTPSecure;
-                $mail->Port       = $emoWebPanelSMTPPort;
-
-                $mail->setFrom($emoWebPanelSMTPFrom, $emoWebPanelSMTPFromName);
-                $mail->addAddress($email, $username);
-
-                $mail->Subject = 'Password Reset';
-                $mail->Body = <<<EOF
-                Dear {$username},
-
-                Click on the following link to reset your password:
-                
-                {$verifyLink}
-
-                This link will be valid for 10 minutes. You may ignore this email if you haven't requested changing your password.
-
-                Yours truly,
-                {$emoWebPanelSMTPFromName}
-                EOF;
-
-                $mail->send();
-            } catch (Exception $e) {
-                http_response_code(500);
-                $errmsg = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-            }
+            $verifyLink = "{$rootURL}/forgetPasswordConfirm.php?emailToken={$confirm_code}";
+            $sendmail = true;
         }
     }
 }
@@ -108,3 +67,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 
 </html>
+<?php
+session_write_close();
+fastcgi_finish_request();
+if ($sendmail === true) {
+    // Send the email
+
+    $mail = prepareMail();
+    $mail->addAddress($email, $username);
+
+    $mail->Subject = 'Password Reset';
+    $mail->Body = <<<EOF
+    Dear {$username},
+
+    Click on the following link to reset your password:
+    
+    {$verifyLink}
+
+    This link will be valid for 10 minutes. You may ignore this email if you haven't requested changing your password.
+
+    Yours truly,
+    {$emoWebPanelSMTPFromName}
+    EOF;
+
+    $mail->send();
+}
+?>

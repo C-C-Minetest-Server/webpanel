@@ -42,8 +42,7 @@ webpanel.register_service("password_reset_start", function(id, cmd)
         end
     end
 
-    local key = "webpanel_emails:" .. username
-    local email = storage:get_string(key)
+    local email = webpanel.get_user_email(username)
     if email == "" then
         return {
             ok = false,

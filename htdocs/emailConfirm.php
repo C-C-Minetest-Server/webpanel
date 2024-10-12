@@ -36,6 +36,7 @@ if (!isset($_GET['emailToken'])) {
 
 <body>
     <p><?php echo htmlspecialchars($msg); ?></p>
+    <p><a href="<?php echo getRootURL() . '/'; ?>">Go back to main page</a></p>
 </body>
 
 </html>

@@ -13,8 +13,7 @@ minetest.register_chatcommand("webpanel_get_email", {
             param = name
         end
 
-        local key = "webpanel_emails:" .. param
-        local email = storage:get_string(key)
+        local email = webpanel.get_user_email(param)
         return true, S("Email of @1: @2", param, email == "" and S("Not set") or email)
     end,
 })

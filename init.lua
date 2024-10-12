@@ -33,6 +33,8 @@ local MP = minetest.get_modpath("webpanel")
 for _, name in ipairs({
     "services",
     "socket",
+	"email",
+	"chatcommand",
 }) do
     dofile(MP .. DIR_DELIM .. "src" .. DIR_DELIM .. name .. ".lua")
 end
