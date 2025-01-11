@@ -34,6 +34,7 @@ for _, name in ipairs({
     "services",
     "socket",
 	"email",
+	"mediawiki",
 	"chatcommand",
 }) do
     dofile(MP .. DIR_DELIM .. "src" .. DIR_DELIM .. name .. ".lua")
@@ -42,6 +43,7 @@ end
 for _, name in ipairs({
     "auth",
 	"email",
+	"mediawiki",
 	"password_reset",
     "storage",
 }) do

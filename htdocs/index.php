@@ -23,6 +23,7 @@ session_start();
     <ul>
         <?php if (isset($_SESSION['username'])) : ?>
             <li><a href="email.php">Set / change email</a></li>
+            <li><a href="mediawiki.php">Mediawiki Integration</a></li>
         <?php endif; ?>
         <li><a href="forgetPassword.php">Forget password?</a></li>
     </ul>

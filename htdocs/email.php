@@ -5,13 +5,8 @@ require_once __DIR__ . '/src/communicate.php';
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/util.php';
 require_once __DIR__ . '/src/mail.php';
-session_start();
 
-if (!isset($_SESSION['username'])) {
-    http_response_code(303); // See Other
-    header("Location: {$emoWebPanelRoot}/login.php?returnto={$emoWebPanelRoot}/email.php");
-    die();
-}
+require __DIR__ . '/src/ensureLogin.php';
 
 $errmsg = null;
 $sendmail = false;

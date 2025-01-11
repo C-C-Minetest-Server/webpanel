@@ -5,7 +5,6 @@
 
 local webpanel = webpanel
 
-local storage = minetest.get_mod_storage()
 local logger = webpanel.internal.logger:sublogger("services.email")
 
 local pending_confirms = {}

@@ -51,3 +51,18 @@ $emoWebPanelSMTPFromName = $emoWebPanelName;
 // Time before a confirmation email would time out
 // Textual representation of webpanel.email_confirm_timeout
 $emoWebPanelEmailTimeout = '10 minutes';
+
+// 5. MediaWiki Integration
+
+// URL to MediaWiki API
+// e.g. https://wiki.example.com/w/api.php
+$emoWebPanelMWAPI = null;
+
+// Username of the in-game privileges worker
+$emoWebPanelMWName = null;
+
+// Bot Password of the in-game privileges worker
+$emoWebPanelMWBotPassword = null;
+
+// List of privileges to be synced by the worker
+$emoWebPanelMWSyncPrivs = null;
