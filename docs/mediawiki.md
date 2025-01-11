@@ -32,8 +32,6 @@ MediaWiki `LocalSettings.php`:
 // Copy bureaucrat to ingame-server
 $wgGroupPermissions['ingame-server'] = $wgGroupPermissions['bureaucrat'];
 $wgRevokePermissions['ingame-server'] = $wgRevokePermissions['bureaucrat'];
-$wgGroupsAddToSelf['ingame-server'] = $wgGroupsAddToSelf['bureaucrat'];
-$wgGroupsRemoveFromSelf['ingame-server'] = $wgGroupsRemoveFromSelf['bureaucrat'];
 
 // Copy sysop to ingame-ban
 $wgGroupPermissions['ingame-ban'] = $wgGroupPermissions['sysop'];
@@ -52,6 +50,8 @@ $wgGroupPermissions['ingame-privs-worker'] = array();
 
 // Prevent bureaucrats from modifying in-game privileges
 $wgGroupPermissions['bureaucrat']['userrights'] = false;
+$wgGroupsAddToSelf['bureaucrat'] = false;
+$wgGroupsRemoveFromSelf['bureaucrat'] = false;
 foreach (array_keys($wgGroupPermissions) as $ug) {
         if (in_array($ug, [ '*', 'user', 'autoconfirmed' ])) continue;
         if (str_starts_with($ug, 'ingame-') && $ug != 'ingame-privs-worker') {
@@ -60,12 +60,16 @@ foreach (array_keys($wgGroupPermissions) as $ug) {
         } else {
                 $wgAddGroups['bureaucrat'][] = $ug;
                 $wgRemoveGroups['bureaucrat'][] = $ug;
+                $wgGroupsAddToSelf['bureaucrat'][] = $ug;
+                $wgGroupsRemoveFromSelf['bureaucrat'][] = $ug;
         }
 }
 
 // Apply $wgAddGroups to in-game synced privieges
 $wgAddGroups['ingame-ban'] = $wgAddGroups['sysop'];
 $wgAddGroups['ingame-server'] = $wgAddGroups['bureaucrat'];
+$wgGroupsAddToSelf['ingame-server'] = $wgGroupsAddToSelf['bureaucrat'];
+$wgGroupsRemoveFromSelf['ingame-server'] = $wgGroupsRemoveFromSelf['bureaucrat'];
 ```
 
 MediaWiki edit tags:
