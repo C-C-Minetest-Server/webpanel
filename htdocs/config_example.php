@@ -66,3 +66,8 @@ $emoWebPanelMWBotPassword = null;
 
 // List of privileges to be synced by the worker
 $emoWebPanelMWSyncPrivs = null;
+
+// 6. Internal API
+
+// Secret for accessing internal APIs
+$emoWebPanelInternalSecret = null;

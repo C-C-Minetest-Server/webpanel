@@ -34,6 +34,7 @@ if (isset($_GET['emailToken'])) {
         $msg = 'Successfully linked account.';
         $sync_username = $result['username'];
         $sync_mediawiki_username = $result['new_mediawiki_name'];
+        $sync_old_mediawiki_username = isset($result['old_mediawiki_name']) ? $result['old_mediawiki_name'] : '';
     }
 } else {
     if (isset($_GET['uname'])) {
@@ -101,6 +102,7 @@ if (isset($sync_username)) {
     }
     $add_groups = array();
     $remove_groups = array();
+    $add_groups[] = 'ingame-*';
     foreach ($emoWebPanelMWSyncPrivs as $privilege) {
         if (isset($get_privs_sync_result['privs'][$privilege]) && $get_privs_sync_result['privs'][$privilege] === true) {
             $add_groups[] = 'ingame-' . $privilege;
@@ -194,6 +196,63 @@ if (isset($sync_username)) {
         goto endmw;
     }
 
+    // Prepare log
+    $log_text =
+        "\n* " . date("Y/m/d H:i:s") . " operation on [[User:" . $sync_mediawiki_username .
+        "|]] (in-game: $sync_username)\n" .
+        "** In-game privileges: " . implode(", ", array_keys($get_privs_sync_result["privs"])) . "\n" .
+        "** Added: " . implode(", ", $add_groups) . "\n" .
+        "** Removed: " . implode(", ", $remove_groups) . "\n";
+    
+    // Remove rights from old user (if any)
+    if (!empty($sync_old_mediawiki_username)) {
+        $old_remove_groups = array();
+        $old_remove_groups[] = 'ingame-*';
+        foreach ($emoWebPanelMWSyncPrivs as $privilege) {
+            $remove_groups[] = 'ingame-' . $privilege;
+        }
+        // Get userrights token for user group changing
+        curl_setopt($ch, CURLOPT_URL, $emoWebPanelMWAPI . '?' . http_build_query(array(
+            'action' => 'query',
+            'meta' => 'tokens',
+            'type' => 'userrights',
+            'format' => 'json',
+            'assert' => 'bot',
+            'errorformat' => 'plaintext',
+        )));
+        curl_setopt($ch, CURLOPT_POST, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, null);
+        $output = curl_exec($ch);
+        $output_json = json_decode($output, true);
+        if (isset($output_json['errors'])) {
+            $msg = 'Error obtaining user rights userrights token: ' . json_encode($output_json['errors']);
+            goto endmw;
+        }
+
+        // Change user rights
+        curl_setopt($ch, CURLOPT_URL, $emoWebPanelMWAPI);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+            'action' => 'userrights',
+            'user' => $old_mediawiki_username,
+            'remove' => implode('|', $old_remove_groups),
+            'tags' => 'webpanel-ingame-privs-sync',
+            'format' => 'json',
+            'assert' => 'bot',
+            'errorformat' => 'plaintext',
+            'token' => $output_json['query']['tokens']['userrightstoken'],
+        ));
+        $output = curl_exec($ch);
+        $output_json = json_decode($output, true);
+        if (isset($output_json['errors'])) {
+            $msg = 'Error modifying old user rights: ' . json_encode($output_json['errors']);
+            goto endmw;
+        }
+
+        $log_text .= "** Changing linked account from [[User:{$old_mediawiki_username}|]], ";
+        $log_text .= "removed all synced user groups.\n";
+    }
+
     // Get CSRF token for logging
     curl_setopt($ch, CURLOPT_URL, $emoWebPanelMWAPI . '?' . http_build_query(array(
         'action' => 'query',
@@ -212,13 +271,7 @@ if (isset($sync_username)) {
         goto endmw;
     }
 
-    // Log the event
-    $log_text =
-        "\n* " . date("Y/m/d H:i:s") . " operation on [[User:" . $sync_mediawiki_username .
-        "|]] (in-game: $sync_username)\n" .
-        "** In-game privileges: " . implode(", ", array_keys($get_privs_sync_result["privs"])) . "\n" .
-        "** Added: " . implode(", ", $add_groups) . "\n" .
-        "** Removed: " . implode(", ", $remove_groups) . "\n";
+    // Do logging
     curl_setopt($ch, CURLOPT_URL, $emoWebPanelMWAPI);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, array(
