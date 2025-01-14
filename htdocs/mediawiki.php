@@ -32,7 +32,9 @@ if (
             $errmsg = 'Missing username';
             goto endany;
         }
-        $mediawiki_name = ucfirst($_POST['uname']);
+        $mediawiki_name = $_POST['uname'];
+        $mediawiki_name = ucfirst($mediawiki_name);
+        $mediawiki_name = str_replace(" ", "_", $mediawiki_name);
 
         $start_confirm_result = request(array(
             'service_name' => 'mediawiki_start_confirm',
