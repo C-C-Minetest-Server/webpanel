@@ -209,7 +209,7 @@ if (isset($sync_username)) {
         $old_remove_groups = array();
         $old_remove_groups[] = 'ingame-*';
         foreach ($emoWebPanelMWSyncPrivs as $privilege) {
-            $remove_groups[] = 'ingame-' . $privilege;
+            $old_remove_groups[] = 'ingame-' . $privilege;
         }
         // Get userrights token for user group changing
         curl_setopt($ch, CURLOPT_URL, $emoWebPanelMWAPI . '?' . http_build_query(array(
