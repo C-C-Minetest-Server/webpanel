@@ -234,7 +234,7 @@ if (isset($sync_username)) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, array(
             'action' => 'userrights',
-            'user' => $old_mediawiki_username,
+            'user' => $sync_old_mediawiki_username,
             'remove' => implode('|', $old_remove_groups),
             'tags' => 'webpanel-ingame-privs-sync',
             'format' => 'json',
@@ -249,7 +249,7 @@ if (isset($sync_username)) {
             goto endmw;
         }
 
-        $log_text .= "** Changing linked account from [[User:{$old_mediawiki_username}|]], ";
+        $log_text .= "** Changing linked account from [[User:{$sync_old_mediawiki_username}|]], ";
         $log_text .= "removed all synced user groups.\n";
     }
 
