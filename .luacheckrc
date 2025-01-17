@@ -23,6 +23,8 @@ read_globals = {
     "vector",
 
     "logging",
+    "social_profile",
+    "flow",
 
     table = {
         fields = {
