@@ -10,7 +10,7 @@ local gui = flow.widgets
 
 social_profile.register_field("email", {
     title = S("Email address"),
-    priority = -55,
+    priority = -110,
     get_value = function(name, profile)
         if profile.show_email then
             return webpanel.get_user_email(name)
@@ -21,7 +21,7 @@ social_profile.register_field("email", {
 
 social_profile.register_field("show_email", {
     title = S("Show email address?"),
-    priority = -55,
+    priority = -110,
     hide = true,
     get_edit_row = function(_, _, value)
         return gui.Checkbox {
