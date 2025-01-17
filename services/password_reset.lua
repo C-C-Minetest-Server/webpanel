@@ -5,7 +5,6 @@
 
 local webpanel = webpanel
 
-local storage = minetest.get_mod_storage()
 local logger = webpanel.internal.logger:sublogger("services.password_reset")
 
 local pending_confirms = {}

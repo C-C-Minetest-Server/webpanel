@@ -3,7 +3,6 @@
 -- Copyright (C) 2024  1F616EMO
 -- SPDX-License-Identifier: LGPL-3.0-or-later
 
-local storage = minetest.get_mod_storage()
 local S = minetest.get_translator("webpanel")
 
 minetest.register_chatcommand("webpanel_get_email", {
